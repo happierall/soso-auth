@@ -34,10 +34,10 @@ func main() {
 	)
 
 	Router.CREATE("product", func(m *soso.Msg) {
-    if m.User.IsAuth {
-      l.Print("create product")
-    }
-  })
+		if m.User.IsAuth {
+			l.Print("create product")
+		}
+	})
 
 	go Router.Run(4000)
 	l.Print("Running app at localhost:4000")
