@@ -7,7 +7,7 @@ var (
 	UsersData = Users{}
 )
 
-func init() {
+func initStore() {
 	// membase.EnableDebug()
 	MB.StoreFolder = "./authmem/"
 

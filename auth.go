@@ -27,6 +27,7 @@ func New(sign string, WithDefaultUser bool, r *soso.Engine) *Auth {
 	a := &Auth{sign, WithDefaultUser, r}
 
 	if WithDefaultUser {
+		initStore()
 		a.Router.Middleware.Before(a.middleware)
 	}
 
