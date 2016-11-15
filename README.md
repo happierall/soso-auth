@@ -37,7 +37,7 @@ func main() {
 }
 ```
 
-## Usage with custome store and user
+## Usage with custom store and user
 ```go
 package main
 
