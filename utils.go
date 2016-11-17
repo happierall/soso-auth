@@ -19,6 +19,10 @@ func ReadToken(m *soso.Msg, sign string) (string, int64, error) {
 		return other.Token, -1, errors.New("Token is does not exists")
 	}
 
+	if other.Token == "" {
+		return "", -1, errors.New("Token empty")
+	}
+
 	payload, _, err := jose.Decode(other.Token, []byte(sign))
 	if err != nil {
 		return other.Token, -1, err

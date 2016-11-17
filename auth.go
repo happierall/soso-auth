@@ -37,7 +37,7 @@ func New(sign string, WithDefaultUser bool, r *soso.Engine) *Auth {
 func (a *Auth) middleware(m *soso.Msg, start time.Time) {
 	token, uid, err := ReadToken(m, a.Sign)
 	if err != nil {
-		Log.Debug("MiddlewareBefore, invalid token. ", err)
+		Log.Debug("MiddlewareBefore: ", err)
 		return
 	}
 

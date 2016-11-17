@@ -7,6 +7,7 @@ import (
 	githubConf "golang.org/x/oauth2/github"
 )
 
+// scopes: user:email
 func UseGithubAuth(
 	auth *Auth,
 	clientID, clientSecret string, scopes []string) *githubAuth {
@@ -18,6 +19,9 @@ func UseGithubAuth(
 	g.ClientID = clientID
 	g.ClientSecret = clientSecret
 	g.Scopes = scopes
+	g.RedirectURL = "http://localhost:4000/oauth/callback/" + g.Name
+
+	g.Sessions = soso.NewSessionList()
 
 	g.CallbackHandler = g.callbackGithub
 	g.Endpoint = githubConf.Endpoint

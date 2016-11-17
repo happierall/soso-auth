@@ -17,9 +17,12 @@ type Base struct {
 	ClientSecret string
 	Scopes       []string
 	Endpoint     oauth2.Endpoint
+	RedirectURL  string
+
+	Sessions soso.SessionList
 
 	OnSuccess func(*User, soso.Session)
-	OnError   func(error)
+	OnError   func(error, soso.Session)
 
 	CallbackHandler func(soso.Session)
 
@@ -36,9 +39,12 @@ func (b *Base) Handle() {
 	if b.Name == "" {
 		Log.Crit("Base.Name can't be empty")
 	}
-
 	b.Auth.Router.Handle("auth", b.Name, b.handler)
 	http.HandleFunc("/oauth/callback/"+b.Name, b.Callback)
+
+	// Listen Default Sessions,
+	// because they have event onClose in rounter
+	soso.Sessions.OnClose(b.Sessions.OnCloseExecute)
 }
 
 func (b *Base) conf() *oauth2.Config {
@@ -47,12 +53,13 @@ func (b *Base) conf() *oauth2.Config {
 		ClientSecret: b.ClientSecret,
 		Scopes:       b.Scopes,
 		Endpoint:     b.Endpoint,
+		RedirectURL:  b.RedirectURL,
 	}
 }
 
 func (b *Base) authUrl(m *soso.Msg) string {
 	uid := xid.New().String()
-	soso.Sessions.Push(m.Session, uid)
+	b.Sessions.Push(m.Session, uid)
 
 	return b.conf().AuthCodeURL(uid, oauth2.AccessTypeOffline)
 }
@@ -62,25 +69,25 @@ func (b *Base) Callback(w http.ResponseWriter, r *http.Request) {
 	uid := r.URL.Query().Get("state")
 
 	if code != "" && uid != "" {
-
 		ctx := context.Background()
+
+		var session soso.Session
+		sessions := b.Sessions.Get(uid)
+
+		if len(sessions) > 0 {
+			session = sessions[0]
+		}
 
 		token, err := b.conf().Exchange(ctx, code)
 		if err != nil {
-			Log.Error(err)
+			Log.Error(err, session.ID, uid)
+			b.OnError(err, session)
 			return
 		}
 
 		b.Token = token
 
 		if b.CallbackHandler != nil {
-
-			var session soso.Session
-			sessions := soso.Sessions.Get(uid)
-
-			if len(sessions) > 0 {
-				session = sessions[0]
-			}
 
 			b.CallbackHandler(session)
 
