@@ -10,7 +10,7 @@ import (
 // scopes: user:email
 func UseGithubAuth(
 	auth *Auth,
-	clientID, clientSecret string, scopes []string) *githubAuth {
+	clientID, clientSecret string, scopes []string, redirectURL string) *githubAuth {
 
 	g := &githubAuth{}
 
@@ -19,7 +19,8 @@ func UseGithubAuth(
 	g.ClientID = clientID
 	g.ClientSecret = clientSecret
 	g.Scopes = scopes
-	g.RedirectURL = "http://localhost:4000/oauth/callback/" + g.Name
+	// g.RedirectURL = "http://localhost:4000/oauth/callback/github"
+	g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
 
 	g.Sessions = soso.NewSessionList()
 

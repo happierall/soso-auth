@@ -16,6 +16,7 @@ import (
 func main() {
 	Router := soso.Default()
 
+	auth.EnableDebug()
 	authObj := auth.New("super-key", true, Router)
 
 	auth.UseGithubAuth(
@@ -23,6 +24,7 @@ func main() {
 		"clientid",
 		"secretid",
 		[]string{"user:email"},
+		"http://localhost:4000", // Then in github settings set: "http://localhost:4000/oauth/callback/github" 
 	)
 
 	Router.CREATE("product", func(m *soso.Msg) {
@@ -75,6 +77,7 @@ func main() {
 		"clientID",
 		"clientSecret",
 		[]string{"user:email"},
+		"http://localhost:4000", // Then in github settings set: "http://localhost:4000/oauth/callback/github"
 	)
 
 	githubAuth.OnSuccess = func(userData *auth.User, session soso.Session) {
@@ -102,18 +105,19 @@ func main() {
 
 	// Read token from every request (other.token)
 	Router.Middleware.Before(func(m *soso.Msg, start time.Time) {
-		token, uid, err := auth.ReadToken(m, authObj.Sign)
+		token, tokenData, err := auth.ReadToken(m, authObj.Sign)
 		if err != nil {
 			return
 		}
 
 		for _, u := range Users {
-			if u.ID == uid {
+			if u.ID == tokenData.UID {
 
-				strID := strconv.FormatInt(uid, 10)
+				strID := strconv.FormatInt(tokenData.UID, 10)
 				m.User.ID = strID
 				m.User.Token = token
 				m.User.IsAuth = true
+				m.User.IsAnonymous = tokenData.IsAnonymous
 
 				// Register session
 				soso.Sessions.Push(m.Session, strID)
@@ -143,7 +147,10 @@ func main() {
 }
 
 func successResponce(user *MyUser, sign string, session soso.Session) {
-	authToken := auth.CreateToken(user.ID, sign)
+	authToken := auth.CreateToken(map[string]interface{}{
+		"uid":         user.ID,
+		"isAnonymous": false,
+	}, sign)
 	soso.SendMsg("auth", "SUCCESS", session, map[string]interface{}{
 		"token": authToken,
 		"user":  user,

@@ -11,7 +11,7 @@ import (
 // scopes: email
 func UseGoogleAuth(
 	auth *Auth,
-	clientID, clientSecret string, scopes []string) *googleAuth {
+	clientID, clientSecret string, scopes []string, redirectURL string) *googleAuth {
 
 	g := &googleAuth{}
 
@@ -20,7 +20,8 @@ func UseGoogleAuth(
 	g.ClientID = clientID
 	g.ClientSecret = clientSecret
 	g.Scopes = scopes
-	g.RedirectURL = "http://localhost:4000/oauth/callback/" + g.Name
+	// g.RedirectURL = "http://localhost:4000/oauth/callback/google"
+	g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
 
 	g.Sessions = soso.NewSessionList()
 

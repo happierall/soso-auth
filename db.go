@@ -12,7 +12,6 @@ func initStore() {
 	MB.StoreFolder = "./authmem/"
 
 	MB.ListenUnique(&UsersData, "auth_users")
-
 	Log.Logf("Users count %d", len(UsersData.List))
 
 	go MB.Run()

@@ -133,7 +133,11 @@ func (b *Base) registerUser(name, email string, session soso.Session) {
 }
 
 func (b *Base) successResponce(user *User, session soso.Session) {
-	authToken := CreateToken(user.ID, b.Auth.Sign)
+	authToken := CreateToken(map[string]interface{}{
+		"UID":         user.ID,
+		"IsAnonymous": false,
+	}, b.Auth.Sign)
+
 	soso.SendMsg("auth", "SUCCESS", session, map[string]interface{}{
 		"token": authToken,
 		"user":  user,
