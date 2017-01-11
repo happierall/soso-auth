@@ -21,7 +21,7 @@ type Base struct {
 
 	Sessions soso.SessionList
 
-	OnSuccess func(*User, soso.Session)
+	OnSuccess func(user *User, session soso.Session, authType string)
 	OnError   func(error, soso.Session)
 
 	CallbackHandler func(soso.Session)
@@ -43,18 +43,23 @@ func (b *Base) Handle() {
 	http.HandleFunc("/oauth/callback/"+b.Name, b.Callback)
 
 	// Listen Default Sessions,
-	// because they have event onClose in rounter
+	// because they have event onClose in router
 	soso.Sessions.OnClose(b.Sessions.OnCloseExecute)
 }
 
 func (b *Base) conf() *oauth2.Config {
-	return &oauth2.Config{
+	conf := &oauth2.Config{
 		ClientID:     b.ClientID,
 		ClientSecret: b.ClientSecret,
 		Scopes:       b.Scopes,
 		Endpoint:     b.Endpoint,
-		RedirectURL:  b.RedirectURL,
 	}
+
+	if b.RedirectURL != "" {
+		conf.RedirectURL = b.RedirectURL
+	}
+
+	return conf
 }
 
 func (b *Base) authUrl(m *soso.Msg) string {
@@ -80,7 +85,7 @@ func (b *Base) Callback(w http.ResponseWriter, r *http.Request) {
 
 		token, err := b.conf().Exchange(ctx, code)
 		if err != nil {
-			Log.Error(err, session.ID, uid)
+			Log.Error(err, session.ID(), uid)
 			b.OnError(err, session)
 			return
 		}
@@ -105,7 +110,7 @@ func (b *Base) registerUser(name, email string, session soso.Session) {
 
 	// Run handler onSuccess and exit
 	if !b.Auth.WithDefaultUser && b.OnSuccess != nil {
-		b.OnSuccess(&user, session)
+		b.OnSuccess(&user, session, b.Name)
 		return
 	}
 
@@ -115,10 +120,10 @@ func (b *Base) registerUser(name, email string, session soso.Session) {
 			u.ServiceToken = b.Token.AccessToken
 
 			if b.OnSuccess != nil {
-				b.OnSuccess(u, session)
+				b.OnSuccess(u, session, b.Name)
 			}
 
-			b.successResponce(u, session)
+			b.successResponse(u, session)
 			return
 		}
 	}
@@ -126,13 +131,13 @@ func (b *Base) registerUser(name, email string, session soso.Session) {
 	UsersData.Create(&user)
 
 	if b.OnSuccess != nil {
-		b.OnSuccess(&user, session)
+		b.OnSuccess(&user, session, b.Name)
 	}
 
-	b.successResponce(&user, session)
+	b.successResponse(&user, session)
 }
 
-func (b *Base) successResponce(user *User, session soso.Session) {
+func (b *Base) successResponse(user *User, session soso.Session) {
 	authToken := CreateToken(map[string]interface{}{
 		"UID":         user.ID,
 		"IsAnonymous": false,
