@@ -8,6 +8,7 @@ import (
 )
 
 // scopes: user:email
+// redirectURL can be empty ""
 func UseGithubAuth(
 	auth *Auth,
 	clientID, clientSecret string, scopes []string, redirectURL string) *githubAuth {
@@ -19,8 +20,11 @@ func UseGithubAuth(
 	g.ClientID = clientID
 	g.ClientSecret = clientSecret
 	g.Scopes = scopes
-	// g.RedirectURL = "http://localhost:4000/oauth/callback/github"
-	g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
+
+	if redirectURL != "" {
+		// RedirectURL = "http://localhost:4000/oauth/callback/github"
+		g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
+	}
 
 	g.Sessions = soso.NewSessionList()
 

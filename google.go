@@ -20,8 +20,11 @@ func UseGoogleAuth(
 	g.ClientID = clientID
 	g.ClientSecret = clientSecret
 	g.Scopes = scopes
-	// g.RedirectURL = "http://localhost:4000/oauth/callback/google"
-	g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
+
+	if redirectURL != "" {
+		// RedirectURL = "http://localhost:4000/oauth/callback/github"
+		g.RedirectURL = redirectURL + "/oauth/callback/" + g.Name
+	}
 
 	g.Sessions = soso.NewSessionList()
 
