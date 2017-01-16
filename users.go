@@ -1,14 +1,22 @@
 package auth
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 type Users struct {
+	sync.RWMutex
+
 	List []*User
 
 	lastID int64
 }
 
 func (u *Users) Get(id int64) (*User, error) {
+	u.RLock()
+	defer u.RUnlock()
+
 	for _, user := range u.List {
 		if user.ID == id {
 			return user, nil
@@ -18,6 +26,9 @@ func (u *Users) Get(id int64) (*User, error) {
 }
 
 func (u *Users) Create(user *User) {
+	u.Lock()
+	defer u.Unlock()
+
 	u.lastID++
 	user.ID = u.lastID
 
@@ -25,6 +36,9 @@ func (u *Users) Create(user *User) {
 }
 
 func (r *Users) Remove(id int64) {
+	r.Lock()
+	defer r.Unlock()
+
 	for key, item := range r.List {
 		if item.ID == id {
 
@@ -37,5 +51,8 @@ func (r *Users) Remove(id int64) {
 }
 
 func (r *Users) Flush() {
+	r.Lock()
+	defer r.Unlock()
+
 	r.List = []*User{}
 }
