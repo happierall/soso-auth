@@ -7,6 +7,9 @@ type User struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 
+	GithubID int    `json:"githubID"`
+	GoogleID string `json:"googleID"`
+
 	ServiceToken string `json:"-"`
 }
 

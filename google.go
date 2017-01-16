@@ -56,16 +56,19 @@ func (g *googleAuth) callbackGoogle(session soso.Session) {
 	data, err := people.Do()
 	if err != nil {
 		l.Error(err)
+		return
 	}
 
-	email := ""
-	name := data.DisplayName
+	user := User{}
+
+	user.GoogleID = data.Id
+	user.Name = data.DisplayName
 
 	for _, e := range data.Emails {
 		if e.Type == "account" {
-			email = e.Value
+			user.Email = e.Value
 		}
 	}
 
-	g.registerUser(name, email, session)
+	g.registerUser(user, session)
 }

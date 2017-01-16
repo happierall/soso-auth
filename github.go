@@ -53,8 +53,19 @@ func (g *githubAuth) callbackGithub(session soso.Session) {
 		return
 	}
 
-	name := *data.Name
-	email := *data.Email
+	user := User{}
 
-	g.registerUser(name, email, session)
+	user.GithubID = *data.ID
+
+	if data.Name != nil {
+		user.Name = *data.Name
+	} else if data.Login != nil {
+		user.Name = *data.Login
+	}
+
+	if data.Email != nil {
+		user.Email = *data.Email
+	}
+
+	g.registerUser(user, session)
 }

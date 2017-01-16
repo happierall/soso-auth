@@ -101,12 +101,7 @@ func (b *Base) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (b *Base) registerUser(name, email string, session soso.Session) {
-	user := User{
-		Name:         name,
-		Email:        email,
-		ServiceToken: b.Token.AccessToken,
-	}
+func (b *Base) registerUser(user User, session soso.Session) {
 
 	// Run handler onSuccess and exit
 	if !b.Auth.WithDefaultUser && b.OnSuccess != nil {
@@ -116,7 +111,10 @@ func (b *Base) registerUser(name, email string, session soso.Session) {
 
 	// or run default mechanic to save user
 	for _, u := range UsersData.List {
-		if u.Email == email {
+		if (user.Email != "" && u.Email == user.Email) ||
+			(user.GithubID != 0 && u.GithubID == user.GithubID) ||
+			(user.GoogleID != "" && u.GoogleID == user.GoogleID) {
+
 			u.ServiceToken = b.Token.AccessToken
 
 			if b.OnSuccess != nil {
