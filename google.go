@@ -65,20 +65,20 @@ func (g *googleAuth) callbackGoogle(session soso.Session) {
 
 	user.GoogleID = data.Id
 
+	for _, e := range data.Emails {
+		if e.Type == "account" {
+			user.Email = e.Value
+		}
+	}
+
 	if data.DisplayName != "" {
 		user.Name = data.DisplayName
 	} else if data.Name.GivenName != "" || data.Name.FamilyName != "" {
 		user.Name = strings.Join([]string{data.Name.GivenName, data.Name.FamilyName}, " ")
 	} else if data.Nickname != "" {
 		user.Name = data.Nickname
-	} else {
-		user.Name = data.Id
-	}
-
-	for _, e := range data.Emails {
-		if e.Type == "account" {
-			user.Email = e.Value
-		}
+	} else if user.Email != "" {
+		user.Name = user.Email
 	}
 
 	g.registerUser(user, session)
