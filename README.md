@@ -157,3 +157,6 @@ func successResponce(user *MyUser, sign string, session soso.Session) {
 	})
 }
 ```
+
+### License
+[MIT](http://opensource.org/licenses/MIT)
