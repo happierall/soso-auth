@@ -1,4 +1,4 @@
-# Auth for Soso-server (ouath2 github)
+# Auth for Soso-server (Warning! Not maintained)
 
 ## Usage with store
 ```go
